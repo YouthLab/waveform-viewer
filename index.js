@@ -2,6 +2,8 @@ var WFD = require('waveform-data');
 var createElement = require('svg-create-element');
 var inherits = require('inherits');
 var EventEmitter = require('events').EventEmitter;
+var xtend = require('xtend');
+var defined = require('defined');
 
 module.exports = WF;
 inherits(WF, EventEmitter);
@@ -9,28 +11,36 @@ inherits(WF, EventEmitter);
 function WF (opts) {
     var self = this;
     if (!(this instanceof WF)) return new WF(opts);
-    this.width = 800;
-    this.height = 100;
-    this.samples = 100;
+    if (!opts) opts = {};
+    
+    this.width = defined(opts.width, 800);
+    this.height = defined(opts.height, 100);
+    this.samples = defined(opts.samples, 100);
+    this.fontSize = defined(opts.fontSize, opts.fontsize, 15);
+    
+    this.colors = xtend({
+        waveform: 'purple',
+        waveformHover: 'cyan',
+        text: 'purple',
+        textHover: 'cyan'
+    }, opts.colors);
     
     this.element = createElement('svg', {
         width: this.width,
-        height: 100,
+        height: this.height,
         class: 'waveform'
     });
     var g = this.group = createElement('g', {
-        fill: 'cyan',
+        fill: this.colors.waveform,
         stroke: 'transparent'
     });
     this.element.appendChild(this.group);
     
-    this.fontSize = 15;
     var txt = createElement('text', {
         x: 0,
         y: this.fontSize,
-        fontFamily: 'pixel',
         fontSize: this.fontSize,
-        fill: 'cyan',
+        fill: this.colors.text,
         stroke: 'transparent'
     });
     txt.textContent = opts.label || '';
@@ -43,12 +53,12 @@ function WF (opts) {
         stroke: 'transparent'
     });
     rect.addEventListener('mouseover', function (ev) {
-        g.setAttribute('fill', 'magenta');
-        txt.setAttribute('fill', 'white');
+        g.setAttribute('fill', self.colors.waveformHover);
+        txt.setAttribute('fill', self.colors.textHover);
     });
     rect.addEventListener('mouseout', function (ev) {
-        g.setAttribute('fill', 'cyan');
-        txt.setAttribute('fill', 'cyan');
+        g.setAttribute('fill', self.colors.waveform);
+        txt.setAttribute('fill', self.colors.text);
     });
     rect.addEventListener('click', function (ev) {
         self.emit('click', ev);
