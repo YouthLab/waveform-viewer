@@ -17,6 +17,7 @@ function WF (opts) {
     this.height = defined(opts.height, 100);
     this.samples = defined(opts.samples, 100);
     this.fontSize = defined(opts.fontSize, opts.fontsize, 15);
+    this.selected = [];
     
     this.colors = xtend({
         waveform: 'purple',
@@ -30,6 +31,10 @@ function WF (opts) {
         height: this.height,
         class: 'waveform'
     });
+    
+    this.defs = createElement('defs');
+    this.element.appendChild(this.defs);
+    
     var g = this.group = createElement('g', {
         fill: this.colors.waveform,
         stroke: 'transparent'
@@ -67,6 +72,7 @@ function WF (opts) {
 }
 
 WF.prototype.load = function (data) {
+    var self = this;
     var wf = WFD.create(data);
     for (var i = 0; i < this.samples; i++) {
         var ix = Math.floor(i / this.samples * wf.max.length);
@@ -83,10 +89,41 @@ WF.prototype.load = function (data) {
         });
         this.group.appendChild(rect);
     }
+    this.emit('load');
 };
 
 WF.prototype.appendTo = function (target) {
     if (typeof target === 'string') target = document.querySelector(target);
     target.appendChild(this.element);
     return this;
+};
+
+WF.prototype.select = function (start, end, opts) {
+    var self = this;
+    if (!this._loaded) {
+        this.once('load', function () { self.select(start, end, opts) });
+    }
+    if (!opts) opts = {};
+    var ref = {
+        start: start,
+        end: end,
+        options: opts,
+        element: this.group.cloneNode(true)
+    };
+    this.selected.push(ref);
+    
+    var cid = 'clipPath_' + Math.floor(Math.pow(16,8)*Math.random());
+    var clipPath = createElement('clipPath', { id: cid });
+    
+    var rect = createElement('rect', {
+        x: start, y: 0,
+        width: Math.max(0, end - start),
+        height: this.height
+    });
+    clipPath.appendChild(rect);
+    this.defs.appendChild(clipPath);
+    
+    ref.element.setAttribute('clip-path', 'url(#' + cid + ')');
+    ref.element.setAttribute('fill', opts.fill);
+    this.element.appendChild(ref.element);
 };
