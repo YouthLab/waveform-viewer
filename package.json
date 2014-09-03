@@ -1,0 +1,40 @@
+{
+  "name": "waveform-viewer",
+  "version": "1.0.0",
+  "description": "display waveforms from audio files in the browser",
+  "main": "index.js",
+  "dependencies": {
+    "defined": "~0.0.0",
+    "inherits": "~2.0.1",
+    "svg-create-element": "~1.0.0",
+    "waveform-data": "~1.4.0",
+    "xtend": "~4.0.0"
+  },
+  "devDependencies": {
+    "tape": "^2.13.2",
+    "drag-drop": "~1.1.1",
+    "ecstatic": "~0.5.4"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/substack/waveform-viewer.git"
+  },
+  "homepage": "https://github.com/substack/waveform-viewer",
+  "keywords": [
+    "audio",
+    "waveform",
+    "browser",
+    "track",
+    "music",
+    "ui"
+  ],
+  "author": {
+    "name": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net"
+  },
+  "license": "MIT"
+}
