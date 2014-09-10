@@ -55,12 +55,26 @@ Load audio data into the waveform viewer from an array buffer.
 
 Append the viewer `v` to an html element or css selector string `target`.
 
+## var sel = v.select(opts)
+
+Create a selected region that overlays the waveform data.
+
+Options are:
+
+* `opts.start` - start of the selection in pixels
+* `opts.end` -  end of the selection in pixels
+* `opts.fill` - color to fill the selected region
+
+## sel.remove()
+
+Remove the selected region created with `v.select()`.
+
 # events
 
-## v.on('click', function (ev) {})
+## v.element.on(evname, function (ev) {})
 
-When a user clicks the viewer, this event fires with the underlying `ev`
-object.
+When mouse event happens on the viewer, the event is forwarded with the
+underlying `ev` object.
 
 # install
 

@@ -69,12 +69,9 @@ function WF (opts) {
         txt.setAttribute('fill', self.colors.text);
     });
     
-    var events = [ 'click', 'mouseover', 'mousemove', 'mouseout' ];
-    for (var i = 0; i < events.length; i++) (function (name) {
-        rect.addEventListener(name, function (ev) {
-            self.emit(name, ev);
-        });
-    })(events[i]);
+    rect.addEventListener('click', function (ev) {
+        self.emit('click', ev); // deprecated
+    });
     
     this.element.appendChild(rect);
 }
@@ -128,8 +125,8 @@ WF.prototype.select = function (opts) {
         var clipPath = createElement('clipPath', { id: cid });
         
         var rect = createElement('rect', {
-            x: start, y: 0,
-            width: Math.max(0, end - start),
+            x: opts.start, y: 0,
+            width: Math.max(0, opts.end - opts.start),
             height: self.height
         });
         clipPath.appendChild(rect);
