@@ -68,9 +68,14 @@ function WF (opts) {
         g.setAttribute('fill', self.colors.waveform);
         txt.setAttribute('fill', self.colors.text);
     });
-    rect.addEventListener('click', function (ev) {
-        self.emit('click', ev);
-    });
+    
+    var events = [ 'click', 'mouseover', 'mousemove', 'mouseout' ];
+    for (var i = 0; i < events.length; i++) (function (name) {
+        rect.addEventListener(name, function (ev) {
+            self.emit(name, ev);
+        });
+    })(events[i]);
+    
     this.element.appendChild(rect);
 }
 
@@ -111,7 +116,9 @@ WF.prototype.select = function (opts) {
         this.once('load', onload);
         return clip;
     }
-    else onload();
+    
+    var g = createElement('g');
+    onload();
     
     function onload () {
         clip.load(self.group.cloneNode(true));
@@ -130,8 +137,14 @@ WF.prototype.select = function (opts) {
         
         clip.element.setAttribute('clip-path', 'url(#' + cid + ')');
         clip.element.setAttribute('fill', opts.fill);
-        self.element.appendChild(clip.element);
+        g.appendChild(clip.element);
+        self.element.appendChild(g);
     }
     
-    return ref;
+    return {
+        remove: function () {
+            self.element.removeChild(g);
+        },
+        element: g
+    };
 };
