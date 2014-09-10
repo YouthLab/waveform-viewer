@@ -5,6 +5,8 @@ var EventEmitter = require('events').EventEmitter;
 var xtend = require('xtend');
 var defined = require('defined');
 
+var Clip = require('./lib/clip.js');
+
 module.exports = WF;
 inherits(WF, EventEmitter);
 
@@ -17,7 +19,8 @@ function WF (opts) {
     this.height = defined(opts.height, 100);
     this.samples = defined(opts.samples, 100);
     this.fontSize = defined(opts.fontSize, opts.fontsize, 15);
-    this.selected = [];
+    this.selected = {};
+    this._selectId = 1;
     
     this.colors = xtend({
         waveform: 'purple',
@@ -98,32 +101,37 @@ WF.prototype.appendTo = function (target) {
     return this;
 };
 
-WF.prototype.select = function (start, end, opts) {
+WF.prototype.select = function (opts) {
     var self = this;
-    if (!this._loaded) {
-        this.once('load', function () { self.select(start, end, opts) });
-    }
     if (!opts) opts = {};
-    var ref = {
-        start: start,
-        end: end,
-        options: opts,
-        element: this.group.cloneNode(true)
-    };
-    this.selected.push(ref);
+    var clip = Clip(xtend(opts, {
+        id: this._selectId ++
+    }));
+    if (!this._loaded) {
+        this.once('load', onload);
+        return clip;
+    }
+    else onload();
     
-    var cid = 'clipPath_' + Math.floor(Math.pow(16,8)*Math.random());
-    var clipPath = createElement('clipPath', { id: cid });
+    function onload () {
+        clip.load(self.group.cloneNode(true));
+        self.selected[clip.id] = clip;
+        
+        var cid = 'clipPath_' + Math.floor(Math.pow(16,8)*Math.random());
+        var clipPath = createElement('clipPath', { id: cid });
+        
+        var rect = createElement('rect', {
+            x: start, y: 0,
+            width: Math.max(0, end - start),
+            height: self.height
+        });
+        clipPath.appendChild(rect);
+        self.defs.appendChild(clipPath);
+        
+        clip.element.setAttribute('clip-path', 'url(#' + cid + ')');
+        clip.element.setAttribute('fill', opts.fill);
+        self.element.appendChild(clip.element);
+    }
     
-    var rect = createElement('rect', {
-        x: start, y: 0,
-        width: Math.max(0, end - start),
-        height: this.height
-    });
-    clipPath.appendChild(rect);
-    this.defs.appendChild(clipPath);
-    
-    ref.element.setAttribute('clip-path', 'url(#' + cid + ')');
-    ref.element.setAttribute('fill', opts.fill);
-    this.element.appendChild(ref.element);
+    return ref;
 };
